@@ -11,7 +11,7 @@ import android.widget.ToggleButton;
 /**
  * This is the main activity of the HelloIOIO example application.
  * It displays a toggle button on the screen, which enables control of the
- * on-board LED. Modified by Vic 131109A
+ * on-board LED. Modified by Vic rev 131110A
  */
 public class MainActivity extends IOIOActivity
 {
@@ -40,9 +40,9 @@ public class MainActivity extends IOIOActivity
 	{
 		private DigitalOutput led_;// The on-board LED
 		private DigitalOutput motorEnable; // Both motors
-		private DigitalOutput rightMotorClock;
+		private DigitalOutput rightMotorClock; // Step right motor
 		private DigitalOutput motorCongtrollerReset;
-		private DigitalOutput rightMotorControl;
+		private DigitalOutput rightMotorControl; // Motor decay mode
 
 		/**
 		 * Called every time a connection with IOIO has been established.
@@ -68,15 +68,23 @@ public class MainActivity extends IOIOActivity
 		@Override
 		public void loop() throws ConnectionLostException
 		{
-			led_.write(!button_.isChecked());
-			try
-			{
-				Thread.sleep(1000);
-				rightMotorClock.write(true);
-				rightMotorClock.write(false);
-			} catch (InterruptedException e)
-			{
-			}
+			if (button_.isChecked())
+		{
+				led_.write(false);
+				try
+				{
+					Thread.sleep(1000);
+					rightMotorClock.write(true);
+					rightMotorClock.write(false);
+				} catch (InterruptedException e)
+				{
+				}
+		}else
+		{
+			led_.write(true);
+		}
+			
+			//led_.write(!button_.isChecked());
 		}
 	}
 
