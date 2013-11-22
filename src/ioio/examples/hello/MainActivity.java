@@ -6,12 +6,13 @@ import ioio.lib.util.BaseIOIOLooper;
 import ioio.lib.util.IOIOLooper;
 import ioio.lib.util.android.IOIOActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ToggleButton;
 
 /**
- * This is the main activity of the HelloIOIO example application.
- * It displays a toggle button on the screen, which enables control of the
- * on-board LED. Modified by Vic rev 131110A
+ * This is the main activity of the HelloIOIO example application. It displays a
+ * toggle button on the screen, which enables control of the on-board LED.
+ * Modified by Vic rev 131110A
  */
 public class MainActivity extends IOIOActivity
 {
@@ -47,30 +48,44 @@ public class MainActivity extends IOIOActivity
 		/**
 		 * Called every time a connection with IOIO has been established.
 		 * Typically used to open pins.
-		 * @throws ConnectionLostException when IOIO connection is lost.
+		 * 
+		 * @throws ConnectionLostException
+		 *             when IOIO connection is lost.
 		 * @see ioio.lib.util.AbstractIOIOActivity.IOIOThread#setup()
 		 */
 		@Override
 		protected void setup() throws ConnectionLostException
 		{
-			led_ = ioio_.openDigitalOutput(0, true);
-			motorCongtrollerReset = ioio_.openDigitalOutput(22, true);
-			motorEnable = ioio_.openDigitalOutput(3, true);// Must be true for motors to run.
-			rightMotorClock = ioio_.openDigitalOutput(28, false);// Each pulse moves motor one step.
-			rightMotorControl = ioio_.openDigitalOutput(6, false);// Both motors.  Low => fast motor decay mode.
+				led_ = ioio_.openDigitalOutput(0, false);
+				motorCongtrollerReset = ioio_.openDigitalOutput(22, true);
+				motorEnable = ioio_.openDigitalOutput(3, true);// Must be true for
+																// motors to run.
+				rightMotorClock = ioio_.openDigitalOutput(28, false);// Each pulse
+																		// moves
+																		// motor one
+																		// step.
+				rightMotorControl = ioio_.openDigitalOutput(6, false);// Both
+																		// motors.
+																		// Low =>
+																		// fast
+																		// motor
+																		// decay
+																		// mode.
 		}
 
 		/**
 		 * Called repetitively while the IOIO is connected.
-		 * @throws ConnectionLostException when IOIO connection is lost.
+		 * 
+		 * @throws ConnectionLostException
+		 *             when IOIO connection is lost.
 		 * @see ioio.lib.util.AbstractIOIOActivity.IOIOThread#loop()
 		 */
 		@Override
 		public void loop() throws ConnectionLostException
 		{
 			if (button_.isChecked())
-		{
-				led_.write(false);
+			{
+				led_.write(true);
 				try
 				{
 					Thread.sleep(1000);
@@ -79,12 +94,10 @@ public class MainActivity extends IOIOActivity
 				} catch (InterruptedException e)
 				{
 				}
-		}else
-		{
-			led_.write(true);
-		}
-			
-			//led_.write(!button_.isChecked());
+			} else
+			{
+				led_.write(false);
+			}
 		}
 	}
 
