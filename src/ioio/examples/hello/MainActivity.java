@@ -11,7 +11,7 @@ import android.widget.ToggleButton;
 
 /**
  * This is the main activity of the HelloIOIO example application. It displays a toggle button on the screen, which
- * enables control of the on-board LED. Modified by Vic rev 131122A
+ * enables control of the on-board LED. Modified by Vic rev 130402A
  */
 public class MainActivity extends IOIOActivity
 {
