@@ -75,12 +75,12 @@ public class MainActivity extends IOIOActivity
 		@Override
 		public void loop() throws ConnectionLostException
 		{
-			if (button_.isChecked())
+			if (!button_.isChecked())
 			{
 				led_.write(false);
 				try
 				{
-					Thread.sleep(1000);
+					Thread.sleep(100);
 					rightMotorClock.write(true);
 					rightMotorClock.write(false);
 					leftMotorClock.write(true);
