@@ -5,17 +5,19 @@ import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.BaseIOIOLooper;
 import ioio.lib.util.IOIOLooper;
 import ioio.lib.util.android.IOIOActivity;
+import android.graphics.DashPathEffect;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ToggleButton;
 
 /**
  * This is the main activity of the HelloIOIO example application. It displays a
- * toggle button on the screen, which enables control of the on-board LED.
- * Modified by Vic rev 130402A
+ * toggle button on the screen, which enables control of the on-board LED and controls the VicsWagon.
+ * Modified by Vic rev 140430A
  */
 public class MainActivity extends IOIOActivity {
 	private ToggleButton button_;
+	public UltraSonicSensor sonar;
 
 	/**
 	 * Called when the activity is first created. Here we normally initialize
@@ -56,6 +58,7 @@ public class MainActivity extends IOIOActivity {
 		 */
 		@Override
 		protected void setup() throws ConnectionLostException {
+			sonar = new UltraSonicSensor(ioio_);
 			led_ = ioio_.openDigitalOutput(0, true);
 			rightMotorDirection = ioio_.openDigitalOutput(20, false);
 			leftMotorDirection = ioio_.openDigitalOutput(21, true);
@@ -89,12 +92,14 @@ public class MainActivity extends IOIOActivity {
 		public void loop() throws ConnectionLostException {
 			if (button_.isChecked()) {
 				try {
-					Thread.sleep(10);
+					Thread.sleep(1000);
 					led_.write(true);
 					rightMotorClock.write(true);
 					rightMotorClock.write(false);
 					leftMotorClock.write(true);
 					leftMotorClock.write(false);
+					sonar.read();
+					
 				} catch (InterruptedException e) {
 				}
 			}else
