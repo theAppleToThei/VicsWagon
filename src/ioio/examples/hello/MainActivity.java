@@ -1,6 +1,12 @@
 package ioio.examples.hello;
 
 import ioio.lib.api.DigitalOutput;
+import ioio.lib.api.PwmOutput;
+import ioio.lib.api.Sequencer;
+import ioio.lib.api.Sequencer.ChannelConfigBinary;
+import ioio.lib.api.Sequencer.ChannelCueBinary;
+import ioio.lib.api.Sequencer.ChannelCueFmSpeed;
+import ioio.lib.api.Sequencer.ChannelCueSteps;
 import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.BaseIOIOLooper;
 import ioio.lib.util.IOIOLooper;
@@ -12,8 +18,8 @@ import android.widget.ToggleButton;
 
 /**
  * This is the main activity of the HelloIOIO example application. It displays a
- * toggle button on the screen, which enables control of the on-board LED and controls the VicsWagon.
- * Modified by Vic rev 140430A
+ * toggle button on the screen, which enables control of the on-board LED and
+ * controls the VicsWagon. Modified by Vic rev 140430A
  */
 public class MainActivity extends IOIOActivity {
 	private ToggleButton button_;
@@ -39,6 +45,10 @@ public class MainActivity extends IOIOActivity {
 	 */
 	class Looper extends BaseIOIOLooper {
 		private DigitalOutput led_;// The on-board LED
+		private int pulseWidth = 10;// microseconds
+		private int rightStepperMotorPeriod = 60000;
+		private DigitalOutput rightMotorClockPulse;
+		private DigitalOutput leftMotorClockPulse;
 		private DigitalOutput motorEnable; // Both motors
 		private DigitalOutput rightMotorClock; // Step right motor
 		private DigitalOutput leftMotorClock; // Step left motor
@@ -46,6 +56,46 @@ public class MainActivity extends IOIOActivity {
 		private DigitalOutput rightMotorControl; // Motor decay mode
 		private DigitalOutput rightMotorDirection;
 		private DigitalOutput leftMotorDirection;
+		private DigitalOutput motorControllerControl;// Decay mode selector,
+														// high =
+		// slow decay, low = fast
+		// decay
+		private static final int MOTOR_ENABLE_PIN = 3;// Low turns off all power
+														// to
+		// botyh motors
+		private static final int MOTOR_RIGHT_DIRECTION_OUTPUT_PIN = 20;// High =
+		// clockwise,
+		// low =
+		// counter-clockwise
+		private static final int MOTOR_LEFT_DIRECTION_OUTPUT_PIN = 21;
+		private static final int MOTOR_CONTROLLER_CONTROL_PIN = 6;// For both
+																	// motors
+		private static final int REAR_STROBE_ULTRASONIC_OUTPUT_PIN = 14;// output
+		// from ioio
+		// board
+		private static final int MOTOR_HALF_FULL_STEP_PIN = 7;// For both motors
+		private static final int MOTOR_RESET = 22;// For both motors
+		private static final int MOTOR_CLOCK_LEFT_PIN = 27;
+		private static final int MOTOR_CLOCK_RIGHT_PIN = 28;
+		private Sequencer sequencer_;
+		private Sequencer.ChannelCueBinary stepperDirCue_ = new ChannelCueBinary();
+		private Sequencer.ChannelCueSteps stepperStepCue_ = new ChannelCueSteps();
+		private Sequencer.ChannelCueFmSpeed stepperFMspeedCue_ = new ChannelCueFmSpeed();
+		private Sequencer.ChannelCue[] cue_ = new Sequencer.ChannelCue[] { stepperFMspeedCue_ };
+		final ChannelConfigBinary stepperDirConfig = new Sequencer.ChannelConfigBinary(
+				false, false, new DigitalOutput.Spec(
+						MOTOR_RIGHT_DIRECTION_OUTPUT_PIN));
+		private int rightMotorSpeed;
+		private DigitalOutput halfFull;
+		private DigitalOutput reset; // Must be true for motors to run.
+		private DigitalOutput control;// Decay mode selector high = slow, low = fast
+		// final ChannelConfigSteps stepperStepConfig = new ChannelConfigSteps(new
+		// DigitalOutput.Spec(MOTOR_CLOCK_RIGHT_PIN));
+		// final ChannelConfigFmSpeed stepperFMspeedConfig = new
+		// ChannelConfigFmSpeed(Clock.CLK_2M, 10, new
+		// DigitalOutput.Spec(MOTOR_CLOCK_RIGHT_PIN));
+		// final ChannelConfig[] config = new ChannelConfig[]
+		// {stepperFMspeedConfig};
 
 		/**
 		 * Called every time a connection with IOIO has been established.
@@ -99,12 +149,11 @@ public class MainActivity extends IOIOActivity {
 					leftMotorClock.write(true);
 					leftMotorClock.write(false);
 					sonar.read();
-					
+
 				} catch (InterruptedException e) {
 				}
-			}else
-			{
-			led_.write(false);
+			} else {
+				led_.write(false);
 			}
 		}
 	}
