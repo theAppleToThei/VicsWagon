@@ -1,5 +1,7 @@
 package ioio.examples.hello;
-
+/**************************************************************************
+ * Happy version 140430A...ultrasonics and motors working
+ **************************************************************************/
 import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.PwmOutput;
 import ioio.lib.api.Sequencer;
@@ -21,7 +23,8 @@ import android.widget.ToggleButton;
  * toggle button on the screen, which enables control of the on-board LED and
  * controls the VicsWagon. Modified by Vic rev 140430A
  */
-public class MainActivity extends IOIOActivity {
+public class MainActivity extends IOIOActivity
+{
 	private ToggleButton button_;
 	public UltraSonicSensor sonar;
 
@@ -30,7 +33,8 @@ public class MainActivity extends IOIOActivity {
 	 * our GUI.
 	 */
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
+	public void onCreate(Bundle savedInstanceState)
+	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		button_ = (ToggleButton) findViewById(R.id.button);
@@ -43,7 +47,8 @@ public class MainActivity extends IOIOActivity {
 	 * been established (which might happen several times!). Then, loop() will
 	 * be called repetitively until the IOIO gets disconnected
 	 */
-	class Looper extends BaseIOIOLooper {
+	class Looper extends BaseIOIOLooper
+	{
 		private DigitalOutput led_;// The on-board LED
 		private int pulseWidth = 10;// microseconds
 		private int rightStepperMotorPeriod = 60000;
@@ -56,23 +61,12 @@ public class MainActivity extends IOIOActivity {
 		private DigitalOutput rightMotorControl; // Motor decay mode
 		private DigitalOutput rightMotorDirection;
 		private DigitalOutput leftMotorDirection;
-		private DigitalOutput motorControllerControl;// Decay mode selector,
-														// high =
-		// slow decay, low = fast
-		// decay
-		private static final int MOTOR_ENABLE_PIN = 3;// Low turns off all power
-														// to
-		// botyh motors
-		private static final int MOTOR_RIGHT_DIRECTION_OUTPUT_PIN = 20;// High =
-		// clockwise,
-		// low =
-		// counter-clockwise
+		private DigitalOutput motorControllerControl;// Decay mode selector, high = slow decay, low = fast decay
+		private static final int MOTOR_ENABLE_PIN = 3;// Low turns off all power to both motors
+		private static final int MOTOR_RIGHT_DIRECTION_OUTPUT_PIN = 20;// High = clockwise, low = ccw
 		private static final int MOTOR_LEFT_DIRECTION_OUTPUT_PIN = 21;
 		private static final int MOTOR_CONTROLLER_CONTROL_PIN = 6;// For both
-																	// motors
-		private static final int REAR_STROBE_ULTRASONIC_OUTPUT_PIN = 14;// output
-		// from ioio
-		// board
+		private static final int REAR_STROBE_ULTRASONIC_OUTPUT_PIN = 14;// output from ioio board
 		private static final int MOTOR_HALF_FULL_STEP_PIN = 7;// For both motors
 		private static final int MOTOR_RESET = 22;// For both motors
 		private static final int MOTOR_CLOCK_LEFT_PIN = 27;
@@ -82,66 +76,49 @@ public class MainActivity extends IOIOActivity {
 		private Sequencer.ChannelCueSteps stepperStepCue_ = new ChannelCueSteps();
 		private Sequencer.ChannelCueFmSpeed stepperFMspeedCue_ = new ChannelCueFmSpeed();
 		private Sequencer.ChannelCue[] cue_ = new Sequencer.ChannelCue[] { stepperFMspeedCue_ };
-		final ChannelConfigBinary stepperDirConfig = new Sequencer.ChannelConfigBinary(
-				false, false, new DigitalOutput.Spec(
-						MOTOR_RIGHT_DIRECTION_OUTPUT_PIN));
+		final ChannelConfigBinary stepperDirConfig = new Sequencer.ChannelConfigBinary(false, false, new DigitalOutput.Spec(MOTOR_RIGHT_DIRECTION_OUTPUT_PIN));
 		private int rightMotorSpeed;
 		private DigitalOutput halfFull;
 		private DigitalOutput reset; // Must be true for motors to run.
-		private DigitalOutput control;// Decay mode selector high = slow, low = fast
-		// final ChannelConfigSteps stepperStepConfig = new ChannelConfigSteps(new
+		private DigitalOutput control;// Decay mode selector high = slow, low = fast mode
+		// final ChannelConfigSteps stepperStepConfig = new
+		// ChannelConfigSteps(new DigitalOutput.Spec(MOTOR_CLOCK_RIGHT_PIN));
+		// final ChannelConfigFmSpeed stepperFMspeedConfig = new ChannelConfigFmSpeed(Clock.CLK_2M, 10, new
 		// DigitalOutput.Spec(MOTOR_CLOCK_RIGHT_PIN));
-		// final ChannelConfigFmSpeed stepperFMspeedConfig = new
-		// ChannelConfigFmSpeed(Clock.CLK_2M, 10, new
-		// DigitalOutput.Spec(MOTOR_CLOCK_RIGHT_PIN));
-		// final ChannelConfig[] config = new ChannelConfig[]
-		// {stepperFMspeedConfig};
+		// final ChannelConfig[] config = new ChannelConfig[] {stepperFMspeedConfig};
 
 		/**
 		 * Called every time a connection with IOIO has been established.
 		 * Typically used to open pins.
-		 * 
-		 * @throws ConnectionLostException
-		 *             when IOIO connection is lost. when IOIO connection is
-		 *             lost.
+		 * @throws ConnectionLostExceptio when IOIO connection is lost. when IOIO connection lost.
 		 * @see ioio.lib.util.AbstractIOIOActivity.IOIOThread#setup()
 		 */
 		@Override
-		protected void setup() throws ConnectionLostException {
+		protected void setup() throws ConnectionLostException
+		{
 			sonar = new UltraSonicSensor(ioio_);
 			led_ = ioio_.openDigitalOutput(0, true);
-			rightMotorDirection = ioio_.openDigitalOutput(20, false);
-			leftMotorDirection = ioio_.openDigitalOutput(21, true);
+			rightMotorDirection = ioio_.openDigitalOutput(20, true);//vicswagon goes forward
+			leftMotorDirection = ioio_.openDigitalOutput(21, false);
 			motorCongtrollerReset = ioio_.openDigitalOutput(22, true);
-			motorEnable = ioio_.openDigitalOutput(3, true);// Must be true for
-															// motors to run
-			rightMotorClock = ioio_.openDigitalOutput(28, false);// Each pulse
-																	// moves
-																	// motor one
-																	// step
-			leftMotorClock = ioio_.openDigitalOutput(27, false);// Each pulse
-																// moves motor
-																// one step
-			rightMotorControl = ioio_.openDigitalOutput(6, false);// Both
-																	// motors,
-																	// low =>
-																	// fast
-																	// motor
-																	// decay
-																	// mode
+			motorEnable = ioio_.openDigitalOutput(3, true);// Must be true for motors to run
+			rightMotorClock = ioio_.openDigitalOutput(28, false);// Each pulse moves motor one step
+			leftMotorClock = ioio_.openDigitalOutput(27, false);
+			rightMotorControl = ioio_.openDigitalOutput(6, false);// Both motors, low => fast motor decay mode
 		}
 
 		/**
 		 * Called repetitively while the IOIO is connected.
-		 * 
-		 * @throws ConnectionLostException
-		 *             when IOIO connection is lost.
+		 * @throws ConnectionLostException when IOIO connection is lost.
 		 * @see ioio.lib.util.AbstractIOIOActivity.IOIOThread#loop()
 		 */
 		@Override
-		public void loop() throws ConnectionLostException {
-			if (button_.isChecked()) {
-				try {
+		public void loop() throws ConnectionLostException
+		{
+			if (button_.isChecked())
+			{
+				try
+				{
 					Thread.sleep(1000);
 					led_.write(true);
 					rightMotorClock.write(true);
@@ -150,9 +127,11 @@ public class MainActivity extends IOIOActivity {
 					leftMotorClock.write(false);
 					sonar.read();
 
-				} catch (InterruptedException e) {
+				} catch (InterruptedException e)
+				{
 				}
-			} else {
+			} else
+			{
 				led_.write(false);
 			}
 		}
@@ -160,11 +139,11 @@ public class MainActivity extends IOIOActivity {
 
 	/**
 	 * A method to create our IOIO thread.
-	 * 
 	 * @see ioio.lib.util.AbstractIOIOActivity#createIOIOThread()
 	 */
 	@Override
-	protected IOIOLooper createIOIOLooper() {
+	protected IOIOLooper createIOIOLooper()
+	{
 		return new Looper();
 	}
 }
