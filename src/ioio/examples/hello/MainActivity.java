@@ -22,22 +22,21 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 /**
- * This is the main activity of the HelloIOIO example application. It displays a
- * toggle button on the screen, which enables control of the on-board LED and
- * controls the VicsWagon. Modified by Vic rev 140430A
+ * This is the main activity of the HelloIOIO example application. It displays a toggle button on the screen, which enables control of the on-board LED and controls the VicsWagon. Modified by Vic rev 140430A
  */
-public class MainActivity extends IOIOActivity {
+public class MainActivity extends IOIOActivity
+{
 	private ToggleButton button_;
 	public UltraSonicSensor sonar;
 	TextView text;
 	ScrollView scroller;
 
 	/**
-	 * Called when the activity is first created. Here we normally initialize
-	 * our GUI.
+	 * Called when the activity is first created. Here we normally initialize our GUI.
 	 */
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
+	public void onCreate(Bundle savedInstanceState)
+	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		button_ = (ToggleButton) findViewById(R.id.button);
@@ -46,13 +45,10 @@ public class MainActivity extends IOIOActivity {
 	}
 
 	/**
-	 * This is the thread on which all the IOIO activity happens. It will be run
-	 * every time the application is resumed and aborted when it is paused. The
-	 * method setup() will be called right after a connection with the IOIO has
-	 * been established (which might happen several times!). Then, loop() will
-	 * be called repetitively until the IOIO gets disconnected
+	 * This is the thread on which all the IOIO activity happens. It will be run every time the application is resumed and aborted when it is paused. The method setup() will be called right after a connection with the IOIO has been established (which might happen several times!). Then, loop() will be called repetitively until the IOIO gets disconnected
 	 */
-	class Looper extends BaseIOIOLooper {
+	class Looper extends BaseIOIOLooper
+	{
 		private DigitalOutput led_;// The on-board LED
 		private int pulseWidth = 10;// microseconds
 		private int rightStepperMotorPeriod = 60000;
@@ -88,10 +84,9 @@ public class MainActivity extends IOIOActivity {
 		private Sequencer.ChannelCueBinary stepperDirCue_ = new ChannelCueBinary();
 		private Sequencer.ChannelCueSteps stepperStepCue_ = new ChannelCueSteps();
 		private Sequencer.ChannelCueFmSpeed stepperFMspeedCue_ = new ChannelCueFmSpeed();
-		private Sequencer.ChannelCue[] cue_ = new Sequencer.ChannelCue[] { stepperFMspeedCue_ };
-		final ChannelConfigBinary stepperDirConfig = new Sequencer.ChannelConfigBinary(
-				false, false, new DigitalOutput.Spec(
-						MOTOR_RIGHT_DIRECTION_OUTPUT_PIN));
+		private Sequencer.ChannelCue[] cue_ = new Sequencer.ChannelCue[]
+		{ stepperFMspeedCue_ };
+		final ChannelConfigBinary stepperDirConfig = new Sequencer.ChannelConfigBinary(false, false, new DigitalOutput.Spec(MOTOR_RIGHT_DIRECTION_OUTPUT_PIN));
 		private int rightMotorSpeed;
 		private DigitalOutput halfFull;
 		private DigitalOutput reset; // Must be true for motors to run.
@@ -105,17 +100,16 @@ public class MainActivity extends IOIOActivity {
 		// DigitalOutput.Spec(MOTOR_CLOCK_RIGHT_PIN));
 		// final ChannelConfig[] config = new ChannelConfig[]
 		// {stepperFMspeedConfig};
-
 		/**
-		 * Called every time a connection with IOIO has been established.
-		 * Typically used to open pins.
+		 * Called every time a connection with IOIO has been established. Typically used to open pins.
 		 * 
 		 * @throws ConnectionLostExceptio
 		 *             when IOIO connection is lost. when IOIO connection lost.
 		 * @see ioio.lib.util.AbstractIOIOActivity.IOIOThread#setup()
 		 */
 		@Override
-		protected void setup() throws ConnectionLostException {
+		protected void setup() throws ConnectionLostException
+		{
 			sonar = new UltraSonicSensor(ioio_);
 			led_ = ioio_.openDigitalOutput(0, true);
 			rightMotorDirection = ioio_.openDigitalOutput(20, true);// vicswagon
@@ -147,9 +141,13 @@ public class MainActivity extends IOIOActivity {
 		 * @see ioio.lib.util.AbstractIOIOActivity.IOIOThread#loop()
 		 */
 		@Override
-		public void loop() throws ConnectionLostException {
-			if (button_.isChecked()) {
-				try {
+		public void loop() throws ConnectionLostException
+		{
+			if (button_.isChecked())
+			{
+				try
+				{
+					log("In the loop");
 					Thread.sleep(1000);
 					led_.write(true);
 					rightMotorClock.write(true);
@@ -157,18 +155,25 @@ public class MainActivity extends IOIOActivity {
 					leftMotorClock.write(true);
 					leftMotorClock.write(false);
 					sonar.read();
-
-				} catch (InterruptedException e) {
+				} catch (InterruptedException e)
+				{
+					log("Interrupted exception!!!");
+				} catch (Exception e)
+				{
+					log("Exception!!!");
 				}
-			} else {
+			} else
+			{
 				led_.write(false);
 			}
 		}
 
-		public void log(final String msg) {
-			runOnUiThread(new Runnable() {
-
-				public void run() {
+		public void log(final String msg)
+		{
+			runOnUiThread(new Runnable()
+			{
+				public void run()
+				{
 					text.append(msg);
 					text.append("\n");
 					scroller.smoothScrollTo(0, text.getBottom());
@@ -183,7 +188,8 @@ public class MainActivity extends IOIOActivity {
 	 * @see ioio.lib.util.AbstractIOIOActivity#createIOIOThread()
 	 */
 	@Override
-	protected IOIOLooper createIOIOLooper() {
+	protected IOIOLooper createIOIOLooper()
+	{
 		return new Looper();
 	}
 }
